@@ -50,10 +50,10 @@ class Record(Field):
         else:
             self.phones = []
 
-    def add(self, phone):
+    def add_phone(self, phone):
         self.phones.append(Phone(phone))
 
-    def change(self, old_phone, new_phone):
+    def change_phone(self, old_phone, new_phone):
         for el in self.phones:
             if el.value == old_phone:
                 el.value = new_phone
@@ -100,10 +100,13 @@ def add(*args) -> str:
     """
 
     name, number, *_ = args
-    if name in contacts:
-        return f'This contact already exist'
-    contacts.update({name: number})
-    return f'Contact add successfully'
+    if not contacts.get(name):
+        new_number = Record(name, number)
+        contacts.add_record(new_number)
+        return f'Contact add successfully'
+    else:
+        contacts[name].add_phone(number)
+        return f'New number added to {name}'
 
 
 @input_error
@@ -113,22 +116,22 @@ def change(*args) -> str:
     Замість ... користувач вводить ім'я та номер телефону, обов'язково через пробіл.
     """
 
-    name, number, *_ = args
-    if name in contacts:
-        contacts.update({name: number})
+    name, old_number, new_number, *_ = args
+    if contacts.get(name):
+        contacts[name].change_phone(old_number, new_number)
     else:
         return f'No contact "{name}"'
     return f'Contact change successfully'
 
 
 @input_error
-def del_phone(name) -> str:
+def del_phone(name, phone) -> str:
 
     if name in contacts:
-        contacts.pop(name)
+        contacts[name].del_phone(phone)
     else:
         return f'No contact "{name}"'
-    return f'Contact deleted successfully'
+    return f'Phone number deleted successfully'
 
 
 @input_error
@@ -140,7 +143,8 @@ def phone_func(*args) -> str:
 
     name = args[0]
     if contacts.get(name):
-        return '\t{:>20} : {:<12} '.format(name, contacts.get(name))
+        for name, numbers in contacts.items():
+            return f'Name: {name} | Numbers: {", ".join(phone.value for phone in numbers.phones)}'
     else:
         return f'No contact "{name}"'
 
@@ -153,7 +157,7 @@ def show_all() -> str:
 
     result = []
     for name, numbers in contacts.items():
-        result.append('\t{:>20} : {:<12} '.format(name, numbers))
+        result.append(f'Name: {name} | Numbers: {", ".join(phone.value for phone in numbers.phones)}')
     if len(result) < 1:
         return f'Contact list is empty'
     return '\n'.join(result)
