@@ -100,7 +100,7 @@ def add(*args) -> str:
     """
 
     name, number, *_ = args
-    if not contacts.get(name):
+    if not name in contacts:
         new_number = Record(name, number)
         contacts.add_record(new_number)
         return f'Contact add successfully'
@@ -117,7 +117,7 @@ def change(*args) -> str:
     """
 
     name, old_number, new_number, *_ = args
-    if contacts.get(name):
+    if name in contacts:
         contacts[name].change_phone(old_number, new_number)
     else:
         return f'No contact "{name}"'
@@ -142,7 +142,7 @@ def phone_func(*args) -> str:
     """
 
     name = args[0]
-    if contacts.get(name):
+    if name in contacts:
         for name, numbers in contacts.items():
             return f'Name: {name} | Numbers: {", ".join(phone.value for phone in numbers.phones)}'
     else:
